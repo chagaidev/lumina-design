@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMINA | Architecture & Design</title>
+    <meta name="description" content="LUMINA - עיצוב פנים ואדריכלות יוקרה. הופכים חללים ליצירות אמנות.">
+
+    <!-- Fonts: Playfair Display (Serif) + Lato (Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Lato', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        stone: { 50: '#fafaf9', 100: '#f5f5f4', 800: '#292524', 900: '#1c1917' },
+                        olive: { 500: '#84a98c', 600: '#52796f', 900: '#2f3e46' },
+                        gold: { 400: '#d4af37', 500: '#c5a028' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .fade-enter { opacity: 0; transform: translateY(20px); }
+        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased" x-data="app()">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-stone-50/90 backdrop-blur-md border-b border-stone-200 transition-all duration-300"
+         :class="scrolled ? 'py-4 shadow-sm' : 'py-6'">
+        <div class="container mx-auto px-6 flex justify-between items-center">
+            <a href="#" class="text-2xl font-serif font-bold tracking-widest text-olive-900">LUMINA</a>
+            
+            <div class="hidden md:flex gap-8 text-sm font-medium tracking-wide text-stone-600">
+                <a href="#projects" class="hover:text-olive-600 transition">פרויקטים</a>
+                <a href="#studio" class="hover:text-olive-600 transition">הסטודיו</a>
+                <a href="#contact" class="hover:text-olive-600 transition">צור קשר</a>
+            </div>
+
+            <button @click="toggleLang()" class="text-xs font-bold border border-stone-300 px-3 py-1 rounded hover:bg-stone-200 transition">
+                <span x-text="lang === 'he' ? 'EN' : 'עב'"></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="hero.jpg" class="w-full h-full object-cover opacity-90">
+            <div class="absolute inset-0 bg-black/20"></div>
+        </div>
+        
+        <div class="relative z-10 text-center text-white px-6">
+            <p class="text-sm md:text-base tracking-[0.3em] uppercase mb-4 opacity-90" x-text="t.hero_subtitle"></p>
+            <h1 class="text-5xl md:text-8xl font-serif font-medium mb-8 leading-tight">
+                <span x-text="t.hero_title_1"></span><br>
+                <i x-text="t.hero_title_2"></i>
+            </h1>
+            <a href="#contact" class="inline-block border border-white px-8 py-3 text-sm tracking-widest hover:bg-white hover:text-stone-900 transition duration-300" x-text="t.cta"></a>
+        </div>
+    </header>
+
+    <!-- Intro -->
+    <section id="studio" class="py-24 bg-white">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
+            <div>
+                <h2 class="text-4xl font-serif text-olive-900 mb-6" x-text="t.about_title"></h2>
+                <div class="w-16 h-1 bg-gold-400 mb-8"></div>
+                <p class="text-stone-600 leading-loose text-lg mb-6" x-text="t.about_desc"></p>
+                <ul class="space-y-4 text-stone-500">
+                    <li class="flex items-center gap-3">
+                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+                        <span x-text="t.feature_1"></span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+                        <span x-text="t.feature_2"></span>
+                    </li>
+                    <li class="flex items-center gap-3">
+                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+                        <span x-text="t.feature_3"></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="relative">
+                <div class="absolute -top-4 -right-4 w-full h-full border-2 border-olive-500/20 z-0"></div>
+                <img src="project2.jpg" class="relative z-10 w-full h-[500px] object-cover shadow-2xl grayscale hover:grayscale-0 transition duration-1000">
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="py-24 bg-stone-100">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-serif text-olive-900 mb-2" x-text="t.projects_title"></h2>
+                <p class="text-stone-500 font-light" x-text="t.projects_subtitle"></p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden mb-4">
+                        <img src="project1.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-110">
+                    </div>
+                    <h3 class="text-xl font-serif text-stone-800">The Glass House</h3>
+                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Tel Aviv • 2024</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden mb-4">
+                        <img src="project2.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-105">
+                    </div>
+                    <h3 class="text-xl font-serif text-stone-800">Desert Villa</h3>
+                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Negev • 2023</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="group cursor-pointer">
+                    <div class="overflow-hidden mb-4">
+                        <img src="project3.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-110">
+                    </div>
+                    <h3 class="text-xl font-serif text-stone-800">Urban Loft</h3>
+                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Herzliya • 2025</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-24 bg-olive-900 text-stone-100">
+        <div class="container mx-auto px-6 max-w-4xl text-center">
+            <h2 class="text-4xl font-serif mb-8" x-text="t.contact_title"></h2>
+            <p class="text-olive-200 mb-12 text-lg font-light">אנחנו בוחרים בקפידה 10 פרויקטים בשנה. בואו נבדוק התאמה.</p>
+            
+            <form name="lumina-contact" method="POST" data-netlify="true" class="grid md:grid-cols-2 gap-6 text-right">
+                <input type="hidden" name="form-name" value="lumina-contact">
+                <input type="text" name="name" :placeholder="t.form_name" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500">
+                <input type="email" name="email" :placeholder="t.form_email" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500">
+                <textarea name="message" rows="1" :placeholder="t.form_msg" class="md:col-span-2 bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500"></textarea>
+                
+                <div class="md:col-span-2 text-center mt-8">
+                    <button type="submit" class="bg-white text-olive-900 px-10 py-4 font-bold tracking-widest hover:bg-stone-200 transition duration-300" x-text="t.form_btn"></button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <footer class="bg-black text-stone-600 py-8 text-center text-xs tracking-widest uppercase">
+        &copy; 2026 LUMINA ARCHITECTS.
+    </footer>
+
+    <script>
+        function app() {
+            return {
+                lang: 'he',
+                scrolled: false,
+                init() {
+                    window.addEventListener('scroll', () => this.scrolled = window.scrollY > 50);
+                },
+                toggleLang() {
+                    this.lang = this.lang === 'he' ? 'en' : 'he';
+                    document.documentElement.dir = this.lang === 'he' ? 'rtl' : 'ltr';
+                },
+                get t() {
+                    const dict = {
+                        he: {
+                            hero_subtitle: 'אדריכלות ועיצוב פנים',
+                            hero_title_1: 'עיצוב',
+                            hero_title_2: 'על-זמני',
+                            cta: 'גלה עוד',
+                            about_title: 'פילוסופיה של אור',
+                            about_desc: 'אנחנו מאמינים שבית הוא לא רק קירות, אלא תחושה. הסגנון שלנו משלב מינימליזם יפני עם חמימות ים-תיכונית, תוך שימוש בחומרים טבעיים בלבד.',
+                            feature_1: 'תכנון אקולוגי בר-קיימא',
+                            feature_2: 'שימוש באבן ועץ טבעיים',
+                            feature_3: 'ליווי אישי משלב הסקיצה',
+                            projects_title: 'נבחרת הפרויקטים',
+                            projects_subtitle: 'בתים שסיפרנו את הסיפור שלהם',
+                            contact_title: 'בואו ניצור משהו נצחי',
+                            form_name: 'שם מלא',
+                            form_email: 'אימייל',
+                            form_msg: 'ספרו לנו על החלום שלכם...',
+                            form_btn: 'שלח פנייה'
+                        },
+                        en: {
+                            hero_subtitle: 'Architecture & Interior Design',
+                            hero_title_1: 'Timeless',
+                            hero_title_2: 'Design',
+                            cta: 'Discover More',
+                            about_title: 'Philosophy of Light',
+                            about_desc: 'We believe a home is not just walls, but a feeling. Our style combines Japanese minimalism with Mediterranean warmth, using only natural materials.',
+                            feature_1: 'Sustainable Eco-Planning',
+                            feature_2: 'Natural Stone & Wood',
+                            feature_3: 'Personal Guidance from Sketch',
+                            projects_title: 'Selected Projects',
+                            projects_subtitle: 'Homes whose stories we told',
+                            contact_title: 'Let\'s Create Something Timeless',
+                            form_name: 'Full Name',
+                            form_email: 'Email Address',
+                            form_msg: 'Tell us about your dream...',
+                            form_btn: 'Send Inquiry'
+                        }
+                    };
+                    return dict[this.lang];
+                }
+            }
+        }
+    </script>
+</body>
+</html>
