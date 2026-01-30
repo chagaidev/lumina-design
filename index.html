@@ -1,21 +1,28 @@
 <!DOCTYPE html>
-<html lang="he" dir="rtl" class="scroll-smooth">
+<html lang="he" dir="rtl" class="no-js">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUMINA | Architecture & Design</title>
     <meta name="description" content="LUMINA - עיצוב פנים ואדריכלות יוקרה. הופכים חללים ליצירות אמנות.">
 
-    <!-- Fonts: Playfair Display (Serif) + Lato (Sans) -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
-    <!-- Tailwind -->
+    <!-- CSS (Tailwind) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- GSAP & Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
     <script>
+        document.documentElement.classList.remove('no-js');
+        document.documentElement.classList.add('js');
+
         tailwind.config = {
             theme: {
                 extend: {
@@ -34,144 +41,189 @@
     </script>
     <style>
         [x-cloak] { display: none !important; }
-        .fade-enter { opacity: 0; transform: translateY(20px); }
-        .fade-enter-active { opacity: 1; transform: translateY(0); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        
+        /* Smooth Scroll Setup */
+        html.lenis { height: auto; }
+        .lenis.lenis-smooth { scroll-behavior: auto; }
+        .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+        .lenis.lenis-stopped { overflow: hidden; }
+        
+        /* Loader */
+        #loader {
+            position: fixed; inset: 0; z-index: 9999;
+            background: #1c1917; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease-out, visibility 0.8s;
+        }
+        .loader-text {
+            font-family: 'Playfair Display', serif; font-size: 2rem; color: #fff;
+            opacity: 0; transform: translateY(20px);
+        }
+
+        /* Animation Classes */
+        .reveal-text { overflow: hidden; }
+        .reveal-text span { display: block; transform: translateY(100%); transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .is-inview .reveal-text span { transform: translateY(0); }
+        
+        .img-parallax { will-change: transform; }
+        
+        .magnet-btn { transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .magnet-btn:hover { transform: scale(1.05); }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-800 antialiased" x-data="app()">
+<body class="bg-stone-50 text-stone-800 antialiased overflow-x-hidden" x-data="app()">
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-text">LUMINA</div>
+    </div>
 
     <!-- Navigation -->
-    <nav class="fixed w-full z-50 bg-stone-50/90 backdrop-blur-md border-b border-stone-200 transition-all duration-300"
-         :class="scrolled ? 'py-4 shadow-sm' : 'py-6'">
-        <div class="container mx-auto px-6 flex justify-between items-center">
-            <a href="#" class="text-2xl font-serif font-bold tracking-widest text-olive-900">LUMINA</a>
+    <nav class="fixed w-full z-50 transition-all duration-500" id="navbar">
+        <div class="container mx-auto px-6 py-6 flex justify-between items-center">
+            <a href="#" class="text-2xl font-serif font-bold tracking-widest text-olive-900 mix-blend-difference z-50">LUMINA</a>
             
-            <div class="hidden md:flex gap-8 text-sm font-medium tracking-wide text-stone-600">
-                <a href="#projects" class="hover:text-olive-600 transition">פרויקטים</a>
-                <a href="#studio" class="hover:text-olive-600 transition">הסטודיו</a>
-                <a href="#contact" class="hover:text-olive-600 transition">צור קשר</a>
+            <div class="hidden md:flex gap-10 text-sm font-medium tracking-wide text-stone-800 mix-blend-difference z-50">
+                <a href="#projects" class="hover:text-olive-600 transition magnet-btn">פרויקטים</a>
+                <a href="#studio" class="hover:text-olive-600 transition magnet-btn">הסטודיו</a>
+                <a href="#contact" class="hover:text-olive-600 transition magnet-btn">צור קשר</a>
             </div>
 
-            <button @click="toggleLang()" class="text-xs font-bold border border-stone-300 px-3 py-1 rounded hover:bg-stone-200 transition">
+            <button @click="toggleLang()" class="text-xs font-bold border border-stone-800 px-3 py-1 rounded hover:bg-stone-800 hover:text-white transition z-50">
                 <span x-text="lang === 'he' ? 'EN' : 'עב'"></span>
             </button>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="relative h-screen flex items-center justify-center overflow-hidden">
-        <div class="absolute inset-0">
-            <img src="hero.jpg" class="w-full h-full object-cover opacity-90">
-            <div class="absolute inset-0 bg-black/20"></div>
+    <header class="relative h-screen flex items-center justify-center overflow-hidden" id="hero">
+        <div class="absolute inset-0 img-parallax-container">
+            <img src="hero.jpg?v=3" class="w-full h-[120%] object-cover img-parallax" style="object-position: center;">
+            <div class="absolute inset-0 bg-black/30"></div>
         </div>
         
         <div class="relative z-10 text-center text-white px-6">
-            <p class="text-sm md:text-base tracking-[0.3em] uppercase mb-4 opacity-90" x-text="t.hero_subtitle"></p>
-            <h1 class="text-5xl md:text-8xl font-serif font-medium mb-8 leading-tight">
-                <span x-text="t.hero_title_1"></span><br>
-                <i x-text="t.hero_title_2"></i>
+            <p class="text-sm md:text-base tracking-[0.4em] uppercase mb-6 opacity-0 hero-anim" x-text="t.hero_subtitle"></p>
+            <h1 class="text-6xl md:text-9xl font-serif font-medium mb-10 leading-none overflow-hidden">
+                <div class="reveal-text hero-anim-text">
+                    <span x-text="t.hero_title_1"></span>
+                </div>
+                <div class="reveal-text hero-anim-text">
+                    <i class="font-light" x-text="t.hero_title_2"></i>
+                </div>
             </h1>
-            <a href="#contact" class="inline-block border border-white px-8 py-3 text-sm tracking-widest hover:bg-white hover:text-stone-900 transition duration-300" x-text="t.cta"></a>
+            <div class="opacity-0 hero-anim mt-8">
+                <a href="#projects" class="inline-block border border-white/50 backdrop-blur-sm px-10 py-4 text-sm tracking-widest hover:bg-white hover:text-stone-900 transition duration-500 magnet-btn" x-text="t.cta"></a>
+            </div>
         </div>
     </header>
 
     <!-- Intro -->
-    <section id="studio" class="py-24 bg-white">
-        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-16 items-center">
-            <div>
-                <h2 class="text-4xl font-serif text-olive-900 mb-6" x-text="t.about_title"></h2>
-                <div class="w-16 h-1 bg-gold-400 mb-8"></div>
-                <p class="text-stone-600 leading-loose text-lg mb-6" x-text="t.about_desc"></p>
-                <ul class="space-y-4 text-stone-500">
-                    <li class="flex items-center gap-3">
-                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+    <section id="studio" class="py-32 bg-stone-50 relative z-20">
+        <div class="container mx-auto px-6 grid md:grid-cols-2 gap-24 items-center">
+            <div class="scroll-reveal">
+                <h2 class="text-5xl font-serif text-olive-900 mb-8 leading-tight" x-text="t.about_title"></h2>
+                <div class="w-24 h-px bg-gold-400 mb-10"></div>
+                <p class="text-stone-600 leading-loose text-xl mb-10 font-light" x-text="t.about_desc"></p>
+                <ul class="space-y-6 text-stone-500 text-lg">
+                    <li class="flex items-center gap-4">
+                        <span class="w-3 h-3 bg-olive-500 rounded-full"></span>
                         <span x-text="t.feature_1"></span>
                     </li>
-                    <li class="flex items-center gap-3">
-                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+                    <li class="flex items-center gap-4">
+                        <span class="w-3 h-3 bg-olive-500 rounded-full"></span>
                         <span x-text="t.feature_2"></span>
                     </li>
-                    <li class="flex items-center gap-3">
-                        <span class="w-2 h-2 bg-olive-500 rounded-full"></span>
+                    <li class="flex items-center gap-4">
+                        <span class="w-3 h-3 bg-olive-500 rounded-full"></span>
                         <span x-text="t.feature_3"></span>
                     </li>
                 </ul>
             </div>
-            <div class="relative">
-                <div class="absolute -top-4 -right-4 w-full h-full border-2 border-olive-500/20 z-0"></div>
-                <img src="project2.jpg" class="relative z-10 w-full h-[500px] object-cover shadow-2xl grayscale hover:grayscale-0 transition duration-1000">
+            <div class="relative h-[600px] overflow-hidden scroll-img-reveal">
+                <img src="project2.jpg" class="absolute inset-0 w-full h-[120%] object-cover img-parallax">
             </div>
         </div>
     </section>
 
     <!-- Projects -->
-    <section id="projects" class="py-24 bg-stone-100">
+    <section id="projects" class="py-32 bg-stone-100">
         <div class="container mx-auto px-6">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-serif text-olive-900 mb-2" x-text="t.projects_title"></h2>
-                <p class="text-stone-500 font-light" x-text="t.projects_subtitle"></p>
+            <div class="text-center mb-24 scroll-reveal">
+                <h2 class="text-5xl font-serif text-olive-900 mb-4" x-text="t.projects_title"></h2>
+                <p class="text-stone-500 font-light text-lg tracking-wide" x-text="t.projects_subtitle"></p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Card 1 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden mb-4">
-                        <img src="project1.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-110">
+            <div class="space-y-32">
+                <!-- Project 1 -->
+                <div class="grid md:grid-cols-2 gap-12 items-center group project-item">
+                    <div class="h-[500px] overflow-hidden">
+                        <img src="project1.jpg" class="w-full h-full object-cover transition duration-[1.5s] ease-out group-hover:scale-110">
                     </div>
-                    <h3 class="text-xl font-serif text-stone-800">The Glass House</h3>
-                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Tel Aviv • 2024</p>
+                    <div class="px-8 md:order-last">
+                        <span class="text-gold-500 text-sm tracking-widest uppercase mb-2 block">Tel Aviv • 2024</span>
+                        <h3 class="text-4xl font-serif text-stone-900 mb-6">The Glass House</h3>
+                        <p class="text-stone-500 leading-relaxed mb-8">וילה אורבנית בלב העיר הלבנה. שילוב של בטון חשוף, זכוכית וצמחייה טרופית שיוצרת אי של שקט בתוך הכאוס.</p>
+                        <a href="#" class="text-olive-900 border-b border-olive-900 pb-1 hover:text-gold-500 hover:border-gold-500 transition">ראה פרויקט</a>
+                    </div>
                 </div>
-                <!-- Card 2 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden mb-4">
-                        <img src="project2.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-105">
+
+                <!-- Project 2 -->
+                <div class="grid md:grid-cols-2 gap-12 items-center group project-item">
+                    <div class="h-[500px] overflow-hidden md:order-last">
+                        <img src="project2.jpg" class="w-full h-full object-cover transition duration-[1.5s] ease-out group-hover:scale-110">
                     </div>
-                    <h3 class="text-xl font-serif text-stone-800">Desert Villa</h3>
-                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Negev • 2023</p>
+                    <div class="px-8">
+                        <span class="text-gold-500 text-sm tracking-widest uppercase mb-2 block">Negev • 2023</span>
+                        <h3 class="text-4xl font-serif text-stone-900 mb-6">Desert Villa</h3>
+                        <p class="text-stone-500 leading-relaxed mb-8">דיאלוג עם המדבר. שימוש באבן מקומית ופתחים מדוייקים לאור השמש כדי ליצור טמפרטורה נעימה ללא מיזוג.</p>
+                        <a href="#" class="text-olive-900 border-b border-olive-900 pb-1 hover:text-gold-500 hover:border-gold-500 transition">ראה פרויקט</a>
+                    </div>
                 </div>
-                <!-- Card 3 -->
-                <div class="group cursor-pointer">
-                    <div class="overflow-hidden mb-4">
-                        <img src="project3.jpg" class="w-full h-80 object-cover transition duration-700 group-hover:scale-110">
+
+                <!-- Project 3 -->
+                <div class="grid md:grid-cols-2 gap-12 items-center group project-item">
+                    <div class="h-[500px] overflow-hidden">
+                        <img src="project3.jpg" class="w-full h-full object-cover transition duration-[1.5s] ease-out group-hover:scale-110">
                     </div>
-                    <h3 class="text-xl font-serif text-stone-800">Urban Loft</h3>
-                    <p class="text-sm text-stone-500 uppercase tracking-wide mt-1">Herzliya • 2025</p>
+                    <div class="px-8 md:order-last">
+                        <span class="text-gold-500 text-sm tracking-widest uppercase mb-2 block">Herzliya • 2025</span>
+                        <h3 class="text-4xl font-serif text-stone-900 mb-6">Urban Loft</h3>
+                        <p class="text-stone-500 leading-relaxed mb-8">חלל תעשייתי שהוסב למגורי יוקרה. תקרה בגובה 6 מטרים, ריצוף עץ ממוחזר וחלונות ברזל בלגיים.</p>
+                        <a href="#" class="text-olive-900 border-b border-olive-900 pb-1 hover:text-gold-500 hover:border-gold-500 transition">ראה פרויקט</a>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Contact -->
-    <section id="contact" class="py-24 bg-olive-900 text-stone-100">
+    <section id="contact" class="py-32 bg-olive-900 text-stone-100">
         <div class="container mx-auto px-6 max-w-4xl text-center">
-            <h2 class="text-4xl font-serif mb-8" x-text="t.contact_title"></h2>
-            <p class="text-olive-200 mb-12 text-lg font-light">אנחנו בוחרים בקפידה 10 פרויקטים בשנה. בואו נבדוק התאמה.</p>
+            <h2 class="text-5xl font-serif mb-8 scroll-reveal" x-text="t.contact_title"></h2>
+            <p class="text-olive-200 mb-16 text-xl font-light max-w-xl mx-auto scroll-reveal">אנחנו בוחרים בקפידה 10 פרויקטים בשנה. בואו נבדוק התאמה.</p>
             
-            <form name="lumina-contact" method="POST" data-netlify="true" class="grid md:grid-cols-2 gap-6 text-right">
+            <form name="lumina-contact" method="POST" data-netlify="true" class="grid md:grid-cols-2 gap-8 text-right bg-white/5 p-12 backdrop-blur-md rounded-xl border border-white/10 scroll-reveal">
                 <input type="hidden" name="form-name" value="lumina-contact">
-                <input type="text" name="name" :placeholder="t.form_name" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500">
-                <input type="email" name="email" :placeholder="t.form_email" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500">
-                <textarea name="message" rows="1" :placeholder="t.form_msg" class="md:col-span-2 bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500"></textarea>
+                <input type="text" name="name" :placeholder="t.form_name" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500 text-lg">
+                <input type="email" name="email" :placeholder="t.form_email" class="bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500 text-lg">
+                <textarea name="message" rows="2" :placeholder="t.form_msg" class="md:col-span-2 bg-transparent border-b border-olive-700 p-4 focus:border-white focus:outline-none transition placeholder-olive-500 text-lg"></textarea>
                 
                 <div class="md:col-span-2 text-center mt-8">
-                    <button type="submit" class="bg-white text-olive-900 px-10 py-4 font-bold tracking-widest hover:bg-stone-200 transition duration-300" x-text="t.form_btn"></button>
+                    <button type="submit" class="bg-white text-olive-900 px-12 py-5 font-bold tracking-widest hover:bg-gold-400 hover:text-white transition duration-300 rounded-full magnet-btn" x-text="t.form_btn"></button>
                 </div>
             </form>
         </div>
     </section>
 
-    <footer class="bg-black text-stone-600 py-8 text-center text-xs tracking-widest uppercase">
-        &copy; 2026 LUMINA ARCHITECTS.
+    <footer class="bg-black text-stone-600 py-12 text-center text-xs tracking-[0.2em] uppercase border-t border-white/10">
+        &copy; 2026 LUMINA ARCHITECTS. DESIGNED BY BOOGIE.
     </footer>
 
     <script>
+        // Init Alpine
         function app() {
             return {
                 lang: 'he',
-                scrolled: false,
-                init() {
-                    window.addEventListener('scroll', () => this.scrolled = window.scrollY > 50);
-                },
                 toggleLang() {
                     this.lang = this.lang === 'he' ? 'en' : 'he';
                     document.documentElement.dir = this.lang === 'he' ? 'rtl' : 'ltr';
@@ -194,7 +246,11 @@
                             form_name: 'שם מלא',
                             form_email: 'אימייל',
                             form_msg: 'ספרו לנו על החלום שלכם...',
-                            form_btn: 'שלח פנייה'
+                            form_btn: 'שלח פנייה',
+                            nav_services: 'פרויקטים',
+                            nav_work: 'הסטודיו',
+                            nav_about: 'אודות',
+                            cta_talk: 'צור קשר'
                         },
                         en: {
                             hero_subtitle: 'Architecture & Interior Design',
@@ -212,13 +268,82 @@
                             form_name: 'Full Name',
                             form_email: 'Email Address',
                             form_msg: 'Tell us about your dream...',
-                            form_btn: 'Send Inquiry'
+                            form_btn: 'Send Inquiry',
+                            nav_services: 'Projects',
+                            nav_work: 'Studio',
+                            nav_about: 'About',
+                            cta_talk: 'Contact'
                         }
                     };
                     return dict[this.lang];
                 }
             }
         }
+
+        // GSAP Animations (Wait for load)
+        document.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 1. Smooth Scroll (Lenis)
+            const lenis = new Lenis({
+                duration: 1.2,
+                easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+                direction: 'vertical',
+                gestureDirection: 'vertical',
+                smooth: true,
+            });
+
+            function raf(time) {
+                lenis.raf(time);
+                requestAnimationFrame(raf);
+            }
+            requestAnimationFrame(raf);
+
+            // 2. Loading Animation
+            const tl = gsap.timeline();
+            tl.to('.loader-text', { opacity: 1, y: 0, duration: 1, delay: 0.5 })
+              .to('.loader-text', { opacity: 0, y: -20, duration: 0.5, delay: 0.5 })
+              .to('#loader', { y: '-100%', duration: 1, ease: 'power4.inOut' })
+              
+              // Hero Animations
+              .to('.hero-anim', { opacity: 1, y: 0, duration: 1, stagger: 0.2 }, "-=0.5")
+              .to('.hero-anim-text span', { y: 0, duration: 1.2, ease: "power3.out", stagger: 0.1 }, "-=1");
+
+            // 3. Parallax Images
+            gsap.utils.toArray('.img-parallax').forEach(img => {
+                gsap.to(img, {
+                    yPercent: 20,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: img.parentElement,
+                        start: 'top bottom',
+                        end: 'bottom top',
+                        scrub: true
+                    } 
+                });
+            });
+
+            // 4. Text Reveal on Scroll
+            gsap.utils.toArray('.scroll-reveal').forEach(el => {
+                gsap.from(el, {
+                    y: 50,
+                    opacity: 0,
+                    duration: 1,
+                    ease: 'power3.out',
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top 80%',
+                    }
+                });
+            });
+
+            // 5. Navbar Change on Scroll
+            ScrollTrigger.create({
+                start: 'top -50',
+                end: 99999,
+                toggleClass: { className: 'glass', targets: '#navbar' }
+            });
+        });
     </script>
 </body>
 </html>
